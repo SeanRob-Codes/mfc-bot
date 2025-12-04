@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MFC BOT – AI Manufacturing / Controls Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #020617;
+      --bg-alt: #050816;
+      --panel: #020617;
+      --panel-alt: #050816;
+      --accent: #f97316;
+      --accent-soft: #f9731640;
+      --accent-strong: #fb923c;
+      --danger: #ef4444;
+      --text-main: #e5e7eb;
+      --text-muted: #6b7280;
+      --border-subtle: #111827;
+      --shadow-soft: 0 18px 40px #000000c0;
+      --radius-xl: 18px;
+      --radius-lg: 12px;
+      --radius-full: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 0% 0%, #7f1d1d40 0, transparent 45%),
+        radial-gradient(circle at 100% 100%, #1e40af40 0, transparent 45%),
+        radial-gradient(circle at 0% 100%, #f9731640 0, transparent 50%),
+        #020617;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1100px;
+      background: linear-gradient(145deg, #020617ee, #020617f0);
+      border-radius: 24px;
+      border: 1px solid #0f172a;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+    }
+
+    .app-header {
+      padding: 20px 24px 14px;
+      border-bottom: 1px solid #111827;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: radial-gradient(circle at top, #7f1d1d40 0, transparent 60%);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      border: 1px solid #4b5563;
+      background:
+        radial-gradient(circle at 30% 0%, #f97316 0, transparent 55%),
+        radial-gradient(circle at 70% 120%, #dc2626 0, transparent 55%),
+        #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 1px;
+      color: #f9fafb;
+      box-shadow: 0 0 18px #f9731633;
+    }
+
+    .brand-text-main {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #f9fafb;
+    }
+
+    .brand-text-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .mode-pill {
+      padding: 8px 14px;
+      border-radius: var(--radius-full);
+      border: 1px solid #f9731633;
+      background: #02061780;
+      color: #fed7aa;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mode-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 40% 0%, #f97316, #b91c1c);
+      box-shadow: 0 0 12px #f97316aa;
+    }
+
+    .app-body {
+      padding: 6px 20px 20px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .app-body {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    h2.section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #9ca3af;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #f9731615 0, transparent 60%), #020617;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      padding: 14px 14px 16px;
+      box-shadow: 0 16px 28px #00000080;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 120% -20%, #f9731620 0, transparent 60%);
+      opacity: 0.9;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .tagline {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .danger-tag {
+      font-size: 11px;
+      color: #fecaca;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: var(--radius-full);
+      border: 1px solid #7f1d1d;
+      background: #111827;
+      margin-bottom: 10px;
+    }
+
+    .danger-tag span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 600px) {
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .field-label span.sub {
+      color: #4b5563;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    input,
+    select {
+      background: #020617;
+      border-radius: 999px;
+      border: 1px solid #111827;
+      padding: 7px 11px;
+      color: var(--text-main);
+      font-size: 13px;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 1px #f973161a, 0 0 20px #f9731622;
+      background: #020617;
+    }
+
+    input::placeholder {
+      color: #4b5563;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .chip {
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: #9ca3af;
+      background: #020617;
+    }
+
+    .chip strong {
+      color: #f97316;
+      font-weight: 600;
+    }
+
+    .components-card {
+      margin-top: 12px;
+    }
+
+    table.components-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+
+    table.components-table th,
+    table.components-table td {
+      padding: 6px 4px;
+      border-bottom: 1px solid #0b1120;
+      text-align: left;
+    }
+
+    table.components-table th {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #6b7280;
+    }
+
+    table.components-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.components-table td input {
+      border-radius: 999px;
+      width: 100%;
+      padding: 5px 9px;
+      font-size: 12px;
+    }
+
+    .pill-mono {
+      font-family: "Cascadia Code", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 11px;
+      border: 1px solid #111827;
+      background: #020617;
+      color: #9ca3af;
+    }
+
+    .pill-mono.accent {
+      border-color: var(--accent-soft);
+      color: #fed7aa;
+      background: #0b1120;
+    }
+
+    .btn-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn-main {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: radial-gradient(circle at 10% 0%, #f97316, #b91c1c);
+      color: #fefce8;
+      box-shadow: 0 0 16px #f9731633, 0 18px 40px #000000cc;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.08s ease;
+    }
+
+    .btn-main:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+      box-shadow: 0 0 20px #f9731650, 0 20px 44px #000000f0;
+    }
+
+    .btn-main:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 24px #000000d0;
+    }
+
+    .btn-ghost {
+      border-radius: 999px;
+      padding: 8px 10px;
+      border: 1px dashed #374151;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #9ca3af;
+      background: #020617;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ghost span.plus {
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metric-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid #111827;
+      background: #020617;
+      padding: 8px 10px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .metric-sub {
+      font-size: 11px;
+      color: #4b5563;
+      margin-top: 2px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #6b7280;
+    }
+
+    .badge i {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55eaa;
+    }
+
+    .bars-list {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .bar-row-label {
+      font-size: 11px;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .bar-row-label span.name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+
+    .bar-shell {
+      margin-top: 3px;
+      height: 8px;
+      border-radius: 999px;
+      background: #020617;
+      border: 1px solid #111827;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .bar-fill {
+      position: absolute;
+      inset: 0;
+      transform-origin: left center;
+      background: linear-gradient(90deg, #f97316, #b91c1c);
+      box-shadow: 0 0 10px #f9731660;
+    }
+
+    .list-simple {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 4px;
+      padding-left: 16px;
+    }
+
+    .list-simple li {
+      margin-bottom: 3px;
+    }
+
+    .code-block {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+      border-radius: 10px;
+      border: 1px solid #111827;
+      background: #020617;
+      padding: 6px 8px;
+      color: #9ca3af;
+      margin-top: 8px;
+      line-height: 1.4;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .warnings {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .warnings strong {
+      color: #f97316;
+    }
+
+    .footer-line {
+      border-top: 1px dashed #111827;
+      margin-top: 10px;
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 10px;
+      color: #4b5563;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .footer-line span.right {
+      text-align: right;
+    }
+
+    /* subtle scrollbars */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1f2937;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">MF</div>
+        <div>
+          <div class="brand-text-main">MFC BOT</div>
+          <div class="brand-text-sub">Manufacturing &amp; Controls – Dark Mode Engineer</div>
+        </div>
+      </div>
+      <div class="mode-pill">
+        <span class="mode-dot"></span>
+        AI-ASSISTED LOAD DESIGN
+      </div>
+    </header>
+
+    <main class="app-body">
+      <!-- LEFT: INPUT SIDE -->
+      <section>
+        <h2 class="section-title">Inputs – System &amp; Components</h2>
+        <div class="card">
+          <div class="card-inner">
+            <p class="tagline">
+              Feed MFC BOT your control panel basics. It returns rule-of-thumb sizing you can talk through in an interview.
+            </p>
+            <div class="field-grid" style="margin-top:10px;">
+              <div class="field">
+                <label class="field-label">System Voltage <span class="sub">(Line-to-Line, VAC)</span></label>
+                <select id="systemVoltage">
+                  <option value="120">120 V</option>
+                  <option value="208">208 V</option>
+                  <option value="240" selected>240 V</option>
+                  <option value="277">277 V</option>
+                  <option value="480">480 V</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field-label">Design Safety Factor <span class="sub">(for breakers &amp; wire)</span></label>
+                <select id="safetyFactor">
+                  <option value="1.15">1.15 × – Light</option>
+                  <option value="1.25" selected>1.25 × – Standard</option>
+                  <option value="1.4">1.40 × – Aggressive</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field-grid">
+              <div class="field">
+                <label class="field-label">Ambient Temp <span class="sub">(°C, rough)</span></label>
+                <input id="ambientTemp" type="number" value="30" step="1" />
+              </div>
+              <div class="field">
+                <label class="field-label">Duty Profile <span class="sub">(internal tag)</span></label>
+                <select id="dutyProfile">
+                  <option value="mixed" selected>Mixed (motors + PLCs)</option>
+                  <option value="highInrush">High Inrush (VFD / Motors)</option>
+                  <option value="sensitive">Sensitive (I/O, PLC, instrumentation)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="chips">
+              <span class="chip"><strong>Tip:</strong> treat this as an engineering assistant, not a code reference.</span>
+              <span class="chip">Single-phase power model</span>
+            </div>
+
+            <div class="card components-card">
+              <div class="card-inner">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                  <h2 class="section-title" style="margin-bottom:4px;">Component Loads</h2>
+                  <span class="badge"><i></i> Live load %</span>
+                </div>
+                <table class="components-table">
+                  <thead>
+                    <tr>
+                      <th>Component</th>
+                      <th>Current (A)</th>
+                      <th>Wire Gauge (AI)</th>
+                      <th>Load %</th>
+                    </tr>
+                  </thead>
+                  <tbody id="componentBody">
+                    <tr class="component-row">
+                      <td><input type="text" class="comp-name" placeholder="VFD – 3 HP motor" /></td>
+                      <td><input type="number" class="comp-amps" min="0" step="0.1" value="8.5" /></td>
+                      <td class="comp-awg">—</td>
+                      <td class="comp-percent">—</td>
+                    </tr>
+                    <tr class="component-row">
+                      <td><input type="text" class="comp-name" placeholder="PLC + I/O" /></td>
+                      <td><input type="number" class="comp-amps" min="0" step="0.1" value="1.2" /></td>
+                      <td class="comp-awg">—</td>
+                      <td class="comp-percent">—</td>
+                    </tr>
+                    <tr class="component-row">
+                      <td><input type="text" class="comp-name" placeholder="Panel lighting / aux" /></td>
+                      <td><input type="number" class="comp-amps" min="0" step="0.1" value="0.6" /></td>
+                      <td class="comp-awg">—</td>
+                      <td class="comp-percent">—</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="btn-row">
+                  <button class="btn-ghost" id="addRowBtn">
+                    <span class="plus">+</span>
+                    Add Component
+                  </button>
+                  <button class="btn-main" id="runBtn">
+                    <span>Run MFC BOT</span>
+                    <span style="font-size:16px;">⚡</span>
+                  </button>
+                </div>
+
+                <div class="warnings">
+                  <strong>Disclaimer:</strong> Uses simplified, AI-style rules of thumb for demo and conversation.
+                  Always verify against NEC, UL, and your company standards.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: RESULTS SIDE -->
+      <section>
+        <h2 class="section-title">Outputs – What MFC BOT Thinks</h2>
+        <div class="card">
+          <div class="card-inner" id="results">
+            <p class="tagline">
+              Hit <strong>Run MFC BOT</strong> to generate wire gauge picks, panel sizing, and a breakdown you can walk through in an interview.
+            </p>
+            <div class="code-block">
+system_voltage: —
+total_load:     —
+main_breaker:   —
+panel_size:     — × — × —
+awg_strategy:   —
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // ----- Utility Functions -----
+
+    function nextStandardBreaker(amps) {
+      const standards = [10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 125, 150, 175, 200, 225, 250, 300, 400, 600];
+      for (const val of standards) {
+        if (amps <= val) return val;
+      }
+      return amps; // if somehow above 600
+    }
+
+    // Very rough AWG mapping for copper conductors, 75°C, rule-of-thumb only.
+    function recommendAwg(amps) {
+      if (amps <= 2)  return "18 AWG";
+      if (amps <= 5)  return "16 AWG";
+      if (amps <= 7)  return "14 AWG (small control)";
+      if (amps <= 15) return "14 AWG";
+      if (amps <= 20) return "12 AWG";
+      if (amps <= 25) return "10 AWG";
+      if (amps <= 35) return "8 AWG";
+      if (amps <= 50) return "6 AWG";
+      if (amps <= 65) return "4 AWG";
+      if (amps <= 85) return "3 AWG";
+      if (amps <= 95) return "2 AWG";
+      if (amps <= 115) return "1 AWG";
+      if (amps <= 130) return "1/0 AWG";
+      if (amps <= 150) return "2/0 AWG";
+      if (amps <= 175) return "3/0 AWG";
+      if (amps <= 200) return "4/0 AWG";
+      return "Bus / prefab solution";
+    }
+
+    function roughPanelSize(numComponents, totalAmps) {
+      // basic rule: more components & amps = larger panel
+      const baseW = 400; // mm
+      const baseH = 300; // mm
+      const baseD = 200; // mm
+
+      const w = baseW + Math.min(20 * numComponents, 300);
+      const h = baseH + Math.min(15 * numComponents, 300);
+      const d = baseD + Math.min(Math.round(totalAmps * 1.2), 200);
+
+      const toInch = (mm) => (mm / 25.4);
+      function fmt(mm) {
+        return mm.toFixed(0) + " mm (" + toInch(mm).toFixed(1) + ' in)';
+      }
+      return {
+        w_mm: w,
+        h_mm: h,
+        d_mm: d,
+        label: fmt(w) + " W  ×  " + fmt(h) + " H  ×  " + fmt(d) + " D"
+      };
+    }
+
+    function suggestEnclosure(totalAmps, ambient, dutyProfile) {
+      let type = "NEMA 12 – general industrial";
+      if (ambient > 35 || dutyProfile === "highInrush") {
+        type = "NEMA 12/3R with cooling margin";
+      }
+      if (dutyProfile === "sensitive") {
+        type = "NEMA 12 with segregated low-voltage section";
+      }
+
+      let extras = [];
+      if (totalAmps > 80) extras.push("copper bus or heavy-duty terminal block row");
+      if (ambient > 35) extras.push("space for fans or heat exchanger");
+      if (totalAmps > 40) extras.push("clear wire duct paths for motor circuits");
+
+      return { type, extras };
+    }
+
+    function buildLoadBarsHtml(components, totalAmps) {
+      if (!components.length || totalAmps <= 0) {
+        return "<p class='metric-sub'>Add components with non-zero amps to see distribution.</p>";
+      }
+      let html = "<div class='bars-list'>";
+      components.forEach(c => {
+        const pct = (c.amps / totalAmps) * 100;
+        const pctLabel = pct.toFixed(1) + "%";
+        const width = Math.max(4, Math.min(100, pct)); // keep visible
+        html += `
+          <div>
+            <div class="bar-row-label">
+              <span class="name">${c.name || "Unnamed load"}</span>
+              <span>${c.amps.toFixed(2)} A · ${pctLabel}</span>
+            </div>
+            <div class="bar-shell">
+              <div class="bar-fill" style="transform: scaleX(${width / 100});"></div>
+            </div>
+          </div>
+        `;
+      });
+      html += "</div>";
+      return html;
+    }
+
+    function buildListHtml(items) {
+      if (!items || !items.length) return "<p class='metric-sub'>No special notes for this profile.</p>";
+      return "<ul class='list-simple'>" + items.map(i => "<li>" + i + "</li>").join("") + "</ul>";
+    }
+
+    function codeSummaryText({ voltage, totalAmps, designAmps, breaker, panelSizeLabel, awgStrategy }) {
+      const vStr = voltage ? (voltage + " VAC") : "—";
+      const tStr = totalAmps ? (totalAmps.toFixed(2) + " A") : "—";
+      const dStr = designAmps ? (designAmps.toFixed(2) + " A") : "—";
+      const bStr = breaker ? (breaker + " A") : "—";
+      const pStr = panelSizeLabel || "—";
+      const aStr = awgStrategy || "—";
+
+      return [
+        "system_voltage: " + vStr,
+        "total_load:     " + tStr,
+        "design_load:    " + dStr,
+        "main_breaker:   " + bStr,
+        "panel_size:     " + pStr,
+        "awg_strategy:   " + aStr
+      ].join("\n");
+    }
+
+    // ----- Main Run Function -----
+
+    function runMfcBot() {
+      const voltage = parseFloat(document.getElementById("systemVoltage").value) || 0;
+      const safetyFactor = parseFloat(document.getElementById("safetyFactor").value) || 1.25;
+      const ambient = parseFloat(document.getElementById("ambientTemp").value) || 30;
+      const dutyProfile = document.getElementById("dutyProfile").value || "mixed";
+
+      const rows = Array.from(document.querySelectorAll(".component-row"));
+      const components = [];
+
+      rows.forEach(row => {
+        const nameInput = row.querySelector(".comp-name");
+        const ampsInput = row.querySelector(".comp-amps");
+        const awgCell = row.querySelector(".comp-awg");
+        const pctCell = row.querySelector(".comp-percent");
+
+        const name = nameInput.value.trim();
+        const amps = parseFloat(ampsInput.value);
+        if (!isNaN(amps) && amps > 0) {
+          components.push({ name: name || "Load", amps, row, awgCell, pctCell });
+        } else {
+          // reset display if empty
+          if (awgCell) awgCell.textContent = "—";
+          if (pctCell) pctCell.textContent = "—";
+        }
+      });
+
+      const totalAmps = components.reduce((sum, c) => sum + c.amps, 0);
+      const designAmps = totalAmps * safetyFactor;
+      const recommendedBreaker = designAmps > 0 ? nextStandardBreaker(designAmps) : 0;
+
+      // Update per-component AWG + % of load
+      components.forEach(c => {
+        if (c.awgCell) {
+          c.awgCell.textContent = recommendAwg(c.amps);
+        }
+        if (c.pctCell && totalAmps > 0) {
+          const pct = (c.amps / totalAmps) * 100;
+          c.pctCell.textContent = pct.toFixed(1) + "%";
+        }
+      });
+
+      const panel = roughPanelSize(components.length, totalAmps);
+      const enclosure = suggestEnclosure(totalAmps, ambient, dutyProfile);
+
+      const resultsEl = document.getElementById("results");
+      const codeText = codeSummaryText({
+        voltage,
+        totalAmps,
+        designAmps,
+        breaker: recommendedBreaker,
+        panelSizeLabel: panel.label,
+        awgStrategy: dutyProfile === "highInrush"
+          ? "biased for motors / VFDs"
+          : dutyProfile === "sensitive"
+          ? "segregated control wiring"
+          : "mixed-load balanced"
+      });
+
+      const totalPowerKw = (voltage * totalAmps) / 1000;
+
+      const extras = [];
+      if (voltage >= 400) extras.push("consider 480→120 V control transformer for PLC & I/O");
+      if (totalAmps > 60) extras.push("dedicated motor starter / VFD section");
+      if (totalAmps > 20 && dutyProfile !== "sensitive") extras.push("separate control and power wire duct");
+
+      const componentListItems = [];
+      if (totalAmps > 0) {
+        componentListItems.push("Main breaker: ~" + recommendedBreaker + " A, thermal magnetic");
+        componentListItems.push("Feeder conductors sized to design load ≈ " + designAmps.toFixed(1) + " A");
+        componentListItems.push("Branch circuits sized per load AWG suggestions above");
+      }
+      if (extras.length) {
+        extras.forEach(e => componentListItems.push(e));
+      }
+
+      resultsEl.innerHTML = `
+        <div class="card-inner">
+          <p class="danger-tag">
+            <span class="dot"></span>
+            Rapid Rule-of-Thumb Sizing – Verify Before Building
+          </p>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Total Connected Load</div>
+              <div class="metric-value">${totalAmps.toFixed(2)} A</div>
+              <div class="metric-sub">
+                @ ${voltage || "?"} VAC → approx ${isFinite(totalPowerKw) ? totalPowerKw.toFixed(2) : "0.00"} kW
+              </div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Design Load &amp; Main Breaker</div>
+              <div class="metric-value">${
+                designAmps > 0
+                  ? designAmps.toFixed(1) + " A → " + recommendedBreaker + " A breaker"
+                  : "Add valid component currents"
+              }</div>
+              <div class="metric-sub">
+                Safety factor: ${(safetyFactor * 100).toFixed(0)}% of connected load
+              </div>
+            </div>
+          </div>
+
+          <div class="metric-card" style="margin-top:10px;">
+            <div class="metric-label">Panel Envelope (Estimate)</div>
+            <div class="metric-value">${panel.label}</div>
+            <div class="metric-sub">
+              Based on ${components.length} component${components.length === 1 ? "" : "s"} and total load.
+              Sized to look reasonable in an interview, not to stamp a drawing.
+            </div>
+          </div>
+
+          <div class="metric-card" style="margin-top:10px;">
+            <div class="metric-label">Enclosure &amp; Wiring Strategy</div>
+            <div class="metric-value">${enclosure.type}</div>
+            ${buildListHtml(enclosure.extras)}
+          </div>
+
+          <div class="metric-card" style="margin-top:10px;">
+            <div class="metric-label">Load Distribution (Who Eats the Panel)</div>
+            ${buildLoadBarsHtml(components, totalAmps)}
+          </div>
+
+          <div class="metric-card" style="margin-top:10px;">
+            <div class="metric-label">Suggested Component Concepts</div>
+            ${buildListHtml(componentListItems)}
+          </div>
+
+          <div class="code-block">${codeText}</div>
+
+          <div class="warnings">
+            <strong>How to talk about this in an interview:</strong><br/>
+            • “This tool quickly converts amperage + voltage into a panel concept I can sanity-check against NEC tables.”<br/>
+            • “I use it to think out loud about breakers, wire gauge, and rough enclosure size – then I refine in CAD and standards.”<br/>
+            • “The ‘AI’ logic is just encoded engineering judgment, so it’s transparent and adjustable.”
+          </div>
+
+          <div class="footer-line">
+            <span>MFC BOT // Prototype</span>
+            <span class="right">Not for field install · For engineering conversation only</span>
+          </div>
+        </div>
+      `;
+    }
+
+    // ----- Wiring Up Events -----
+
+    document.getElementById("runBtn").addEventListener("click", runMfcBot);
+
+    document.getElementById("addRowBtn").addEventListener("click", () => {
+      const tbody = document.getElementById("componentBody");
+      const tr = document.createElement("tr");
+      tr.className = "component-row";
+      tr.innerHTML = `
+        <td><input type="text" class="comp-name" placeholder="New load (e.g. motor, heater, PLC)" /></td>
+        <td><input type="number" class="comp-amps" min="0" step="0.1" /></td>
+        <td class="comp-awg">—</td>
+        <td class="comp-percent">—</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>
